@@ -8,6 +8,17 @@
 
 
 
+Required Libraries:
+-------------------
+
+The following libraries are required for libgpudb.so:
+
+* Boost (only need to link to boost_system, boost_filesystem, boost_program_options)
+* Avro (avrocpp)
+
+
+
+
 
 How to build on linux:
 ----------------------
@@ -54,11 +65,5 @@ some basic messages with API return values.
 
 
 
-
-Required Libraries:
--------------------
-
-* Boost (system, filessystem, program_options)
-* Avro (avrocpp)
 
 
