@@ -1,0 +1,64 @@
+*********************************************************************
+**  GPUdb C++ API
+**  GIS Federal, Inc.
+**
+**  All rights reserved
+**
+*********************************************************************
+
+
+
+
+How to build on linux:
+----------------------
+
+Building libgpudb.so:
+
+> cd src
+> nano Makefile (or use some other text editor)
+
+Now, follow the instructions at the top of the makefile and change
+the value of the USER_CXXFLAGS variable. Then exit nano or your preferred
+text editor.
+
+> make clean
+> make
+
+This will build the C++ API library for GPUdb (named libgpudb.so) and put it in the lib
+directory (.../gpudb-api-cpp/lib).
+
+
+Building the sample user application:
+
+> cd .. (if you're in ".../gpudb-api-cpp/src")
+> nano Makefile (or any other text editor)
+
+Follow the instructions at the top of the makefile and change
+the values of the USER_CXXFLAGS and USER_LDFLAGS variables. Then exit nano or your preferred
+text editor.
+
+> make clean
+> make
+
+(Optional, if needed:)
+> export LD_LIBRARY_PATH=/path/to/avrolib:/path/to/boostlib:/path/to/gpulib:$LD_LIBRARY_PATH
+
+Please ensure that GPUdb is running somewhere (test_gpudb expects it at 127.0.0.1:9191, but
+feel free to change that in the code).
+
+> ./test_gpudb
+
+
+This should run a sample program that shows how to use the API. It will print out
+some basic messages with API return values.
+
+
+
+
+Required Libraries:
+-------------------
+
+* Boost (system, filessystem, program_options)
+* Avro (avrocpp)
+
+
