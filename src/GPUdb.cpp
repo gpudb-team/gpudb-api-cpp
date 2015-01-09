@@ -14,7 +14,6 @@
 #include "GPUdb.h"
 #include "Utils/GPUdbExceptions.h"
 
-// #include <Poco/Net/IPAddress.h>
 
 
 
@@ -44,19 +43,6 @@ GPUdb::GPUdb( std::string ip, int port, std::string encoding,
     // Perhaps not ideal C++, but lets the user decide if they want exceptions
     g_throw_exceptions = throw_exceptions;
 
-    // try
-    // {
-    //     // If the IP address is incorrect, then this funciton will throw
-    //     Poco::Net::IPAddress::parse( ip );
-    // }
-    // catch ( const std::exception &e )
-    // {
-    //     g_error_message = "Invalid IP address provided: " + ip;
-    //     g_status = gpudb::ERROR;
-    //     if ( g_throw_exceptions )
-    //         throw gpudb::InvalidIPAddrException();
-    // }
-
     // Set the IP address and the port (need to conver to string)
     g_ip = ip;
     std::stringstream ss;
@@ -64,10 +50,9 @@ GPUdb::GPUdb( std::string ip, int port, std::string encoding,
     g_port = ss.str();
 
 
-    // TODO: Support JSON and SNAPPY encoding
+    // TODO: Support SNAPPY encoding
     // if ( encoding == "BINARY" || encoding == "JSON" || encoding == "SNAPPY" )
     if ( encoding == "BINARY" || encoding == "JSON" )
-    // if ( encoding == "BINARY" )
         g_encoding = encoding;
     else
     {
@@ -232,12 +217,10 @@ bool GPUdb::add_object( const std::string &set_id,
                                                                        request.object_data ) )
             return false;
     }
-    else // TODO: Make sure this works correctly
+    else
     {
         request.object_data_str = object_data_json;
         request.object_encoding = "JSON";
-        // TODO: Find out if we really need to set this to anything
-        // request.object_data = ???;
     }
 
     // Make an HTTP call to GPUdb and return the response
@@ -300,7 +283,7 @@ bool GPUdb::bulk_add( const std::string& set_id,
             request.list.push_back( bin_obj_data );
         }
     }
-    else // TODO: Make sure this works correctly
+    else
     {
         // GPUdb derives the number of objects to add from
         // the size of the binary container; so push empty things

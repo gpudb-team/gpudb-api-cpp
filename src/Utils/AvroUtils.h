@@ -16,7 +16,6 @@
 #include <avro/Generic.hh> // for encode(e, GenericDatum)
 
 #include "AvroTypes.h"
-// #include <../AvroTypes.h>
 
 
 namespace gpudb
@@ -32,7 +31,6 @@ class AvroUtils
 private:
 
     typedef std::map<std::string, avro::ValidSchema> map_string_to_schema;
-    // typedef boost::unordered_map<std::string, avro::ValidSchema> map_string_to_schema;
     static map_string_to_schema string_to_schema;
 
 public:
@@ -378,12 +376,10 @@ public:
 template <class T>
 bool AvroUtils::convert_json_to_binary(const std::string& json_str, std::vector<uint8_t>& bytes)
 {
-    // Logger logger = Logger::getInstance("AvroUtils");
-
     const std::string& schema_str = T::schema_str();
-    // LOG4CPLUS_DEBUG(logger,"compiling schema: " << schema_str);
+
     avro::ValidSchema schema = AvroUtils::get_or_compile_schema(schema_str);
-    // LOG4CPLUS_DEBUG(logger,"done compiling schema");
+
     T obj;
     AvroUtils::convert_json_to_object_by_schema<T>(json_str, schema, obj);
     return AvroUtils::convert_to_bytes<T>(obj, bytes);
@@ -392,15 +388,13 @@ bool AvroUtils::convert_json_to_binary(const std::string& json_str, std::vector<
 template <class T>
 bool AvroUtils::convert_binary_to_json(const std::vector<uint8_t>& binary, std::string& str)
 {
-    // Logger logger = Logger::getInstance("AvroUtils");
-
     T obj;
     AvroUtils::convert_to_object<T>(binary, obj);
 
     const std::string& schema_str = T::schema_str();
-    // LOG4CPLUS_DEBUG(logger,"compiling schema: " << schema_str);
+
     avro::ValidSchema schema = AvroUtils::get_or_compile_schema(schema_str);
-    // LOG4CPLUS_DEBUG(logger,"done compiling schema");
+
     return AvroUtils::convert_to_json_by_schema<T>(obj, schema, str);
 }
 
@@ -409,9 +403,6 @@ bool AvroUtils::convert_to_object(const uint8_t* bytes, size_t len, T& avro_obje
 {
     if (len < get_min_binary_encoded_size<T>(avro_object))
     {
-        // GAIA_LOG_ERROR_AND_THROW("AvroUtils", "",
-        //                          "Invalid binary avro data for '" << avro_object.schema_name() <<
-        //                          "', is " << len << " bytes, min size is " << get_min_binary_encoded_size<T>(avro_object) << " bytes.");
         return false;
     }
 
@@ -425,11 +416,6 @@ bool AvroUtils::convert_to_object(const uint8_t* bytes, size_t len, T& avro_obje
     }
     catch (const std::exception &e)
     {
-        // Logger logger = Logger::getInstance("AvroUtils");
-        // GAIA_LOG_ERROR_AND_THROW(logger,"","Unable to convert avro encoding to object; name: " <<
-        //                          T::schema_name() << ", size: " << len << ", avro error: '" << e.what() << "'");
-        // GAIA_LOG_ERROR_AND_THROW("AvroUtils","","Unable to convert avro encoding to object; name: " <<
-        //                          T::schema_name() << ", size: " << len << ", avro error: '" << e.what() << "'");
         return false;
     }
 
@@ -441,9 +427,6 @@ bool AvroUtils::convert_json_to_object_by_schema_str(const std::string& json_str
                                                      const std::string& type_schema_str,
                                                      T& avro_object)
 {
-    // Logger logger = Logger::getInstance("AvroUtils");
-    // LOG4CPLUS_TRACE(logger, "Convert to object by schema str, string " << json_str);
-
     avro::ValidSchema type_schema = AvroUtils::get_or_compile_schema(type_schema_str);
     return convert_json_to_object_by_schema(json_str, type_schema, avro_object);
 }
@@ -453,9 +436,6 @@ bool AvroUtils::convert_json_to_object_by_schema(const std::string& json_str,
                                                  const avro::ValidSchema& schema,
                                                  T& avro_object)
 {
-    // Logger logger = Logger::getInstance("AvroUtils");
-    // LOG4CPLUS_TRACE(logger, "Convert to object by schema, string " << json_str);
-
     // set up decoder
     std::istringstream iss (json_str, std::istringstream::in);
     std::auto_ptr<avro::InputStream> in = avro::istreamInputStream(iss);
@@ -473,23 +453,6 @@ bool AvroUtils::convert_to_byte_stream(const T& avro_object,
                                        AvroMemoryOutputStream& memStream,
                                        size_t _buffer_size)
 {
-    /*
-    // This is a generic conversion, about 4x slower than below.
-
-    std::stringstream ss;
-    std::auto_ptr<avro::OutputStream> out(avro::ostreamOutputStream(ss, 1024));
-    avro::EncoderPtr e = avro::binaryEncoder();
-    e->init(*out);
-    avro::encode(*e, avro_object);
-    //need to run flush to reclaim unused space and not transfer the entire 4096/1024 bytes
-    e->flush();
-    // alternate method, use avro::memoryInputStream(*out),
-    // then avro::StreamReader(*is) and read one byte at a time in a while loop.
-    std::string s(ss.str());
-    std::vector<uint8_t> bytes(s.begin(), s.end());
-    return bytes;
-    */
-
     size_t buffer_size = _buffer_size > 0 ? _buffer_size : get_estimated_binary_encoded_size<T>(avro_object);
 
     // we can ONLY change the chunk size if the stream hasn't been used yet.
@@ -525,9 +488,6 @@ bool AvroUtils::convert_to_json_by_schema_str(const T& avro_object,
                                               const std::string& type_schema_str,
                                               std::string& json_str)
 {
-    // Logger logger = Logger::getInstance("AvroUtils");
-    // LOG4CPLUS_TRACE(logger, "Convert avro obj to string by schema str, string " << type_schema_str);
-
     avro::ValidSchema type_schema = get_or_compile_schema(type_schema_str);
     return convert_to_json_by_schema(avro_object, type_schema, json_str);
 }
@@ -548,14 +508,12 @@ bool AvroUtils::convert_to_json_by_encoder(const T& avro_object,
                                            std::string& json_str)
 {
     std::ostringstream oss (std::ostringstream::out);
-    //oss.precision(30); // DOESN'T do anything, the avro::JsonGenerator::encodeNumber()
-    //                      function creates a new std::ostringstream on the stack each call.
+
     std::auto_ptr<avro::OutputStream> out = avro::ostreamOutputStream(oss);
     encoder->init(*out);
     avro::encode(*encoder, avro_object);
     encoder->flush();
 
-    //LOG4CPLUS_TRACE(logger, "encoded string from type " << type_schema_str);
     json_str = oss.str();
     return true;
 }
@@ -563,10 +521,7 @@ bool AvroUtils::convert_to_json_by_encoder(const T& avro_object,
 // --------------------------------------------------------------------------
 // Specializations of init_avro_message(), definitions in cpp file.
 
-// namespace gpudb
-// {
-    class filter_by_string_response;
-// }
+class filter_by_string_response;
 
 template<> void AvroUtils::init_avro_message<gpudb::filter_by_string_response>(gpudb::filter_by_string_response& );
 
@@ -576,7 +531,6 @@ template<> void AvroUtils::init_avro_message<gpudb::filter_by_string_response>(g
 // --------------------------------------------------------------------------
 // Specializations of min/get_estimated_binary_encoded_size(), definitions in avro .h files.
 
-// #include "obj_defs/obj_defs.h" // forward declarations
 #include "../obj_defs/obj_defs.h" // forward declarations
 
 

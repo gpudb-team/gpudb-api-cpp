@@ -7,12 +7,6 @@
 #include <ostream>
 #include <sstream>
 
-// #include <Poco/Net/HTTPClientSession.h>
-// #include <Poco/Net/HTTPRequest.h>
-// #include <Poco/Net/HTTPResponse.h>
-// #include <Poco/Net/HTTPBasicCredentials.h>
-// #include <Poco/Net/IPAddress.h>
-
 #include <boost/bind.hpp>
 
 
@@ -47,7 +41,6 @@ client::client( boost::asio::io_service& io_service,
     // Start an asynchronous resolve to translate the server and service names
     // into a list of endpoints.
     boost::asio::ip::tcp::resolver::query query( ipaddr, port );
-    // boost::asio::ip::tcp::resolver::query query(server, "http");
     resolver_.async_resolve(query,
                             boost::bind(&client::handle_resolve, this,
                                         boost::asio::placeholders::error,
@@ -104,7 +97,6 @@ void client::handle_resolve( const boost::system::error_code& err,
     }
     else
     {
-        // std::cout << "Error: " << err.message() << "\n";
         throw gpudb::NetworkException( err.message() );
     }
 }  // end handle_resolve
@@ -122,7 +114,6 @@ void client::handle_connect(const boost::system::error_code& err)
     }
     else
     {
-        // std::cout << "Error: " << err.message() << "\n";
         throw gpudb::NetworkException( err.message() );
     }
 }  // end handle_connect
@@ -143,7 +134,6 @@ void client::handle_write_request(const boost::system::error_code& err)
     else
     {
         throw gpudb::NetworkException( err.message() );
-        // std::cout << "Error: " << err.message() << "\n";
     }
 }  // end handle_write_request
 
@@ -156,15 +146,6 @@ void client::handle_read_status_line(const boost::system::error_code& err)
         // Check that response is OK.
         std::istream response_stream( &response_ );
 
-        // DEBUG??
-        // boost::asio::streambuf::const_buffers_type bufs = response_.data();
-        // std::string str(boost::asio::buffers_begin(bufs), boost::asio::buffers_begin(bufs) + response_.size() );
-        // std::cout << str << std::endl;
-
-        // std::ostringstream response_os;
-        // response_os << response_;
-        // std::cout << response_os.str() << std::endl;
-
         std::string http_version;
         response_stream >> http_version;
         unsigned int status_code;
@@ -173,7 +154,6 @@ void client::handle_read_status_line(const boost::system::error_code& err)
         std::getline(response_stream, status_message);
         if (!response_stream || http_version.substr(0, 5) != "HTTP/")
         {
-            // std::cout << "Invalid response\n";
             throw gpudb::NetworkException( "Invalid response\n" );
         }
         // Don't worry about bad status codes; gpudb response will have the error
@@ -186,11 +166,7 @@ void client::handle_read_status_line(const boost::system::error_code& err)
     }
     else
     {
-        // std::stringstream ss;
-        // ss << "Networking error: " << err;
-        // throw gpudb::NetworkException(  ss.str() );
         throw gpudb::NetworkException(  err.message() );
-        // std::cout << "Error: " << err << "\n";
     }
 }  // end handle_read_status_line
 
@@ -204,12 +180,6 @@ void client::handle_read_headers(const boost::system::error_code& err)
         std::istream response_stream(&response_);
         std::string header;
         while (std::getline(response_stream, header) && header != "\r");
-        //     std::cout << header << "\n";
-        // std::cout << "\n";
-
-        // // Write whatever content we already have to output.
-        // if (response_.size() > 0)
-        //     std::cout << &response_;
 
         // Start reading remaining data until EOF.
         boost::asio::async_read( socket_, response_,
@@ -220,7 +190,6 @@ void client::handle_read_headers(const boost::system::error_code& err)
     else
     {
         throw gpudb::NetworkException(  err.message() );
-        // std::cout << "Error: " << err << "\n";
     }
 }  // end handle_read_headers
 
@@ -230,9 +199,6 @@ void client::handle_read_content(const boost::system::error_code& err)
 {
     if (!err)
     {
-        // // Write all of the data that has been read so far.
-        // std::cout << &response_;
-
         // Continue reading remaining data until EOF.
         boost::asio::async_read( socket_, response_,
                                  boost::asio::transfer_at_least(1),
@@ -242,7 +208,6 @@ void client::handle_read_content(const boost::system::error_code& err)
     else if (err != boost::asio::error::eof)
     {
         throw gpudb::NetworkException( err.message() );
-        // std::cout << "Error: " << err << "\n";
     }
 }  // end handle_read_content
 
@@ -275,8 +240,6 @@ bool client::get_response( std::vector<uint8_t>& response )
     // Convert the streambuf to an istream
     boost::asio::streambuf::const_buffers_type buf = response_.data();
     std::istream is( &response_ );
-    // std::string str( boost::asio::buffers_begin( buf ),
-    //                  boost::asio::buffers_begin(bufs) + response_.size() );
 
     // Copy the data from istream to the vector
     response.assign( std::istreambuf_iterator<char>( is ),
@@ -303,115 +266,35 @@ gpudb::gpudb_response HTTPUtils::call_gpudb( const std::string& json_data,
 {
     try
     {
+        // Create the boost asynchronous network IO service
         boost::asio::io_service io_service;
 
+        // The constructor takes care of the whole network messaging
+        // via handler/callback functions
         client c( io_service, gpudb_ip, gpudb_port, endpoint, json_data );
+
+        // Need to actually run the service to initiate the call
         io_service.run();
 
+        // Retrieve the message
         std::string json_response;
         c.get_response( json_response );
-
-        // std::cout << "HTTP raw response for endpoint " << endpoint << ": " << json_response << std::endl;
 
         // Convert the GPUdb response to an object
         gpudb::gpudb_response gresponse;
         if ( gpudb::AvroUtils::convert_to_object( json_response, gresponse ) == false )
             throw gpudb::QueryException( "Error: Unable to parse GPUdb response!\n" );
 
-
-        // // If the IP address is incorrect, then this funciton will throw
-        // Poco::Net::IPAddress::parse( gpudb_ip );
-
-        // Poco::Net::HTTPClientSession s(gpudb_ip, gpudb_port);
-        // s.setTimeout(Poco::Timespan(timeout_secs, 0));
-        // Poco::Net::HTTPRequest http_request(Poco::Net::HTTPRequest::HTTP_POST, endpoint);
-
-        // http_request.setContentType( "application/json" );  // JSON
-
-        // Poco::Net::HTTPBasicCredentials credentials( username , password );
-
-        // // Authenticate the request
-        // credentials.authenticate(http_request);
-        
-        // // write to stream    
-        // std::ostream& os = s.sendRequest(http_request);
-        // os << json_data;
-
-        // // get response
-        // Poco::Net::HTTPResponse response;
-        // std::istream& rs = s.receiveResponse(response);
-
-        // // need to build this back into the JSON response
-        // std::string json_response;
-        // std::getline( rs, json_response );
-
-        // // gpudb response first
-        // gpudb::gpudb_response gresponse;
-        // gpudb::AvroUtils::convert_to_object( json_response, gresponse );
-
-
         return gresponse;
     }
     catch (const std::exception& e)
-    {
+    {  // had a problem
         throw;
     }
 
     return gpudb::gpudb_response(); // shouldn't get here when throwing
 }  // end call_gpudb with IP address and port for JSON data
 
-
-// // Make an HTTP call to GPUdb at gpudb_ip::gpudb_port with json encoding
-// // static
-// gpudb::gpudb_response HTTPUtils::call_gpudb( const std::string& json_data,
-//                                              const std::string& endpoint,
-//                                              const std::string& gpudb_ip, int gpudb_port,
-//                                              const std::string& username,
-//                                              const std::string& password,
-//                                              int timeout_secs )
-// {
-//     try
-//     {
-//         // If the IP address is incorrect, then this funciton will throw
-//         Poco::Net::IPAddress::parse( gpudb_ip );
-
-//         Poco::Net::HTTPClientSession s(gpudb_ip, gpudb_port);
-//         s.setTimeout(Poco::Timespan(timeout_secs, 0));
-//         Poco::Net::HTTPRequest http_request(Poco::Net::HTTPRequest::HTTP_POST, endpoint);
-
-//         http_request.setContentType( "application/json" );  // JSON
-
-//         Poco::Net::HTTPBasicCredentials credentials( username , password );
-
-//         // Authenticate the request
-//         credentials.authenticate(http_request);
-        
-//         // write to stream    
-//         std::ostream& os = s.sendRequest(http_request);
-//         os << json_data;
-
-//         // get response
-//         Poco::Net::HTTPResponse response;
-//         std::istream& rs = s.receiveResponse(response);
-
-//         // need to build this back into the JSON response
-//         std::string json_response;
-//         std::getline( rs, json_response );
-
-//         // gpudb response first
-//         gpudb::gpudb_response gresponse;
-//         gpudb::AvroUtils::convert_to_object( json_response, gresponse );
-
-
-//         return gresponse;
-//     }
-//     catch (const std::exception& e)
-//     {
-//         throw;
-//     }
-
-//     return gpudb::gpudb_response(); // shouldn't get here when throwing
-// }  // end call_gpudb with IP address and port for JSON data
 
 
 
@@ -427,11 +310,17 @@ gpudb::gpudb_response HTTPUtils::call_gpudb( const std::vector<uint8_t>& avro_da
 {
     try
     {
+        // Create the boost asynchronous network IO service
         boost::asio::io_service io_service;
 
+        // The constructor takes care of the whole network messaging
+        // via handler/callback functions
         client c( io_service, gpudb_ip, gpudb_port, endpoint, avro_data );
+
+        // Need to actually run the service to initiate the call
         io_service.run();
 
+        // Retrieve the message
         std::vector<uint8_t> binary_response;
         c.get_response( binary_response );
 
@@ -440,42 +329,10 @@ gpudb::gpudb_response HTTPUtils::call_gpudb( const std::vector<uint8_t>& avro_da
         if ( gpudb::AvroUtils::convert_to_object( binary_response, gresponse ) == false )
             throw gpudb::QueryException( "Unable to parse GPUdb response!\n" );
 
-
-        // // If the IP address is incorrect, then this funciton will throw
-        // Poco::Net::IPAddress::parse( gpudb_ip );
-
-        // Poco::Net::HTTPClientSession s(gpudb_ip, gpudb_port);
-        // s.setTimeout(Poco::Timespan(timeout_secs, 0));
-        // Poco::Net::HTTPRequest http_request(Poco::Net::HTTPRequest::HTTP_POST, endpoint);
-
-        // http_request.setContentType("application/octet-stream"); // binary
-
-        // Poco::Net::HTTPBasicCredentials credentials( username, password );
-
-        // // Authenticate the request
-        // credentials.authenticate(http_request);
-        
-        // // write to stream    
-        // std::ostream& os = s.sendRequest(http_request);
-        // os.write((const char*)&avro_data[0], avro_data.size());
-
-        // // get response
-        // Poco::Net::HTTPResponse response;
-        // std::istream& rs = s.receiveResponse(response);
-
-        // // need to build this back into the avro response
-        // std::vector<uint8_t> response_bytes;
-        // response_bytes.assign( std::istreambuf_iterator<char>(rs),
-        //                        std::istreambuf_iterator<char>() );
-
-        // // gpudb response first
-        // gpudb::gpudb_response gresponse;
-        // gpudb::AvroUtils::convert_to_object(response_bytes, gresponse);
-
         return gresponse;
     }
     catch (const std::exception& e)
-    {
+    {  // had a problem
         throw;
     }
 
@@ -484,7 +341,7 @@ gpudb::gpudb_response HTTPUtils::call_gpudb( const std::vector<uint8_t>& avro_da
 
 
 
-// Convenience wrappers
+//  ------------------------ Convenience wrappers ---------------------------
 
 
 // Make an HTTP call to GPUdb at 127.0.0.1::9191 with binary encoding

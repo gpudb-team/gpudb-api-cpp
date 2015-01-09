@@ -19,15 +19,10 @@ void AvroUtils::initialize()
   if (is_initialized) return;
   is_initialized = true;
 
-  // Logger logger = Logger::getInstance("AvroUtils");
-  // LOG4CPLUS_TRACE(logger, "AvroUtils::initialize");
-
   // Add the common schemas we probably need
   string_to_schema[gpudb::actor_object::schema_str()]  = compile_schema(gpudb::actor_object::schema_str());
   string_to_schema[gpudb::actor_list::schema_str()]    = compile_schema(gpudb::actor_list::schema_str());
   string_to_schema[gpudb::gpudb_response::schema_str()] = compile_schema(gpudb::gpudb_response::schema_str());
-
-  // LOG4CPLUS_TRACE(logger, "Size of the map, # of keys " << AvroUtils::string_to_schema.size());
 }
 
 //static
@@ -68,7 +63,6 @@ bool AvroUtils::convert_binary_to_json(const std::vector<uint8_t>& binary,
     d->init(*in);
     avro::decode(*d, datum);
 
-    //avro::EncoderPtr jsonEncoder = avro::jsonEncoder(type_schema); // expensive to create
     AvroUtils::convert_to_json_by_encoder(datum, jsonEncoder, json_str);
     return true;
 }
