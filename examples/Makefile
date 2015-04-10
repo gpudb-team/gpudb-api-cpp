@@ -2,6 +2,15 @@
 # Replace the value of the USER_CXXFLAGS and USER_LDFLAGS variables with avrocpp
 # and boost include and library paths.
 # (the current ones covers both for me, but it might be different for you)
+#
+# May need to export the lib directory to the library path:
+# > export LD_LIBRARY_PATH=../lib:$LD_LIBRARY_PATH
+#
+# To compile any given example file, at the prompt, run 'make filename_without_extensiton'
+# For example, to compile example_status.cpp, run:
+# > make example_status
+# > ./example_status
+
 
 # Avro and boost include paths: -I/path/to/avro/include  -I/path/to/boost/include
 USER_CXXFLAGS =  -I/opt/gaia-dev-libs/include/
