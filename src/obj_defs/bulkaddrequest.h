@@ -33,6 +33,7 @@ struct bulk_add_request {
     std::vector<std::vector<uint8_t> > list;
     std::vector<std::string > list_str;
     std::string list_encoding;
+    std::map<std::string, std::string > params;
 
     inline bulk_add_request() {}
 
@@ -40,13 +41,15 @@ struct bulk_add_request {
             AvroUtils::get_min_binary_encoded_size(set_id)+
             AvroUtils::get_min_binary_encoded_size(list)+
             AvroUtils::get_min_binary_encoded_size(list_str)+
-            AvroUtils::get_min_binary_encoded_size(list_encoding); }
+            AvroUtils::get_min_binary_encoded_size(list_encoding)+
+            AvroUtils::get_min_binary_encoded_size(params); }
 
     size_t estimated_binary_encoded_size() const { return std::max((size_t)4096,
             AvroUtils::get_binary_encoded_size(set_id)+
             AvroUtils::get_binary_encoded_size(list)+
             AvroUtils::get_binary_encoded_size(list_str)+
             AvroUtils::get_binary_encoded_size(list_encoding)+
+            AvroUtils::get_binary_encoded_size(params)+
             1024); }
 
     static const std::string& schema_name(void)
@@ -56,7 +59,7 @@ struct bulk_add_request {
     }
     static const std::string& schema_str(void)
     {
-        static const std::string str("{\"type\":\"record\",\"name\":\"bulk_add_request\",\"fields\":[{\"name\":\"set_id\",\"type\":\"string\"},{\"name\":\"list\",\"type\":{\"type\":\"array\",\"items\":\"bytes\"}},{\"name\":\"list_str\",\"type\":{\"type\":\"array\",\"items\":\"string\"}},{\"name\":\"list_encoding\",\"type\":\"string\"}]}");
+        static const std::string str("{\"type\":\"record\",\"name\":\"bulk_add_request\",\"fields\":[{\"name\":\"set_id\",\"type\":\"string\"},{\"name\":\"list\",\"type\":{\"type\":\"array\",\"items\":\"bytes\"}},{\"name\":\"list_str\",\"type\":{\"type\":\"array\",\"items\":\"string\"}},{\"name\":\"list_encoding\",\"type\":\"string\"},{\"name\":\"params\",\"type\":{\"type\":\"map\",\"values\":\"string\"}}]}");
         return str;
     }
 
@@ -70,12 +73,14 @@ template<> struct codec_traits<gpudb::bulk_add_request> {
         avro::encode(e, v.list);
         avro::encode(e, v.list_str);
         avro::encode(e, v.list_encoding);
+        avro::encode(e, v.params);
     }
     static void decode(Decoder& d, gpudb::bulk_add_request& v) {
         avro::decode(d, v.set_id);
         avro::decode(d, v.list);
         avro::decode(d, v.list_str);
         avro::decode(d, v.list_encoding);
+        avro::decode(d, v.params);
     }
 };
 

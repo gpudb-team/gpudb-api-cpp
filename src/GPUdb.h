@@ -47,6 +47,16 @@ namespace gpudb
         ERROR
     };
 
+
+    /// /add and /bulkadd parameters
+    enum add_parameter
+    {
+        NONE, /// No parameter provided
+        /// Enables updating/replacing objects with existing primary keys
+        UPDATE_ON_EXISTING_PK
+    };  // end enum add_parameter
+
+
 }  // end namespace gpudb
 
 
@@ -101,6 +111,7 @@ public:
     bool add_object( const std::string &set_id,
                      const std::string &object_data_json,
                      const std::string &type_definition,
+                     const gpudb::add_parameter& param,
                      gpudb::add_object_response &response );
 
     // Add an object to an existing set in GPUdb
@@ -113,6 +124,7 @@ public:
     bool bulk_add( const std::string& set_id,
                    const std::vector<std::string>& object_json_list,
                    const std::string& type_definition,
+                   const gpudb::add_parameter& param,
                    gpudb::bulk_add_response& response );
 
 

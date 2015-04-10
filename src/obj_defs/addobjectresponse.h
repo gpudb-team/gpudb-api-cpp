@@ -30,38 +30,20 @@
 namespace gpudb {
 struct add_object_response {
     std::string OBJECT_ID;
-    std::vector<uint8_t> object_data;
-    std::string object_data_str;
-    std::string object_encoding;
-    std::string set_id;
-    std::vector<std::string > matching_triggers;
-    std::vector<double > matching_qualifiers;
-    std::vector<std::string > nonmatching_triggers;
-    std::vector<double > nonmatching_qualifiers;
+    int32_t count_inserted;
+    int32_t count_updated;
 
-    inline add_object_response() {}
+    inline add_object_response()  : count_inserted(0),count_updated(0) {}
 
     size_t min_binary_encoded_size() const { return
             AvroUtils::get_min_binary_encoded_size(OBJECT_ID)+
-            AvroUtils::get_min_binary_encoded_size(object_data)+
-            AvroUtils::get_min_binary_encoded_size(object_data_str)+
-            AvroUtils::get_min_binary_encoded_size(object_encoding)+
-            AvroUtils::get_min_binary_encoded_size(set_id)+
-            AvroUtils::get_min_binary_encoded_size(matching_triggers)+
-            AvroUtils::get_min_binary_encoded_size(matching_qualifiers)+
-            AvroUtils::get_min_binary_encoded_size(nonmatching_triggers)+
-            AvroUtils::get_min_binary_encoded_size(nonmatching_qualifiers); }
+            AvroUtils::get_min_binary_encoded_size(count_inserted)+
+            AvroUtils::get_min_binary_encoded_size(count_updated); }
 
     size_t estimated_binary_encoded_size() const { return std::max((size_t)4096,
             AvroUtils::get_binary_encoded_size(OBJECT_ID)+
-            AvroUtils::get_binary_encoded_size(object_data)+
-            AvroUtils::get_binary_encoded_size(object_data_str)+
-            AvroUtils::get_binary_encoded_size(object_encoding)+
-            AvroUtils::get_binary_encoded_size(set_id)+
-            AvroUtils::get_binary_encoded_size(matching_triggers)+
-            AvroUtils::get_binary_encoded_size(matching_qualifiers)+
-            AvroUtils::get_binary_encoded_size(nonmatching_triggers)+
-            AvroUtils::get_binary_encoded_size(nonmatching_qualifiers)+
+            AvroUtils::get_binary_encoded_size(count_inserted)+
+            AvroUtils::get_binary_encoded_size(count_updated)+
             1024); }
 
     static const std::string& schema_name(void)
@@ -71,7 +53,7 @@ struct add_object_response {
     }
     static const std::string& schema_str(void)
     {
-        static const std::string str("{\"type\":\"record\",\"name\":\"add_object_response\",\"fields\":[{\"name\":\"OBJECT_ID\",\"type\":\"string\"},{\"name\":\"object_data\",\"type\":\"bytes\"},{\"name\":\"object_data_str\",\"type\":\"string\"},{\"name\":\"object_encoding\",\"type\":\"string\"},{\"name\":\"set_id\",\"type\":\"string\"},{\"name\":\"matching_triggers\",\"type\":{\"type\":\"array\",\"items\":\"string\"}},{\"name\":\"matching_qualifiers\",\"type\":{\"type\":\"array\",\"items\":\"double\"}},{\"name\":\"nonmatching_triggers\",\"type\":{\"type\":\"array\",\"items\":\"string\"}},{\"name\":\"nonmatching_qualifiers\",\"type\":{\"type\":\"array\",\"items\":\"double\"}}]}");
+        static const std::string str("{\"type\":\"record\",\"name\":\"add_object_response\",\"fields\":[{\"name\":\"OBJECT_ID\",\"type\":\"string\"},{\"name\":\"count_inserted\",\"type\":\"int\"},{\"name\":\"count_updated\",\"type\":\"int\"}]}");
         return str;
     }
 
@@ -82,25 +64,13 @@ namespace avro {
 template<> struct codec_traits<gpudb::add_object_response> {
     static void encode(Encoder& e, const gpudb::add_object_response& v) {
         avro::encode(e, v.OBJECT_ID);
-        avro::encode(e, v.object_data);
-        avro::encode(e, v.object_data_str);
-        avro::encode(e, v.object_encoding);
-        avro::encode(e, v.set_id);
-        avro::encode(e, v.matching_triggers);
-        avro::encode(e, v.matching_qualifiers);
-        avro::encode(e, v.nonmatching_triggers);
-        avro::encode(e, v.nonmatching_qualifiers);
+        avro::encode(e, v.count_inserted);
+        avro::encode(e, v.count_updated);
     }
     static void decode(Decoder& d, gpudb::add_object_response& v) {
         avro::decode(d, v.OBJECT_ID);
-        avro::decode(d, v.object_data);
-        avro::decode(d, v.object_data_str);
-        avro::decode(d, v.object_encoding);
-        avro::decode(d, v.set_id);
-        avro::decode(d, v.matching_triggers);
-        avro::decode(d, v.matching_qualifiers);
-        avro::decode(d, v.nonmatching_triggers);
-        avro::decode(d, v.nonmatching_qualifiers);
+        avro::decode(d, v.count_inserted);
+        avro::decode(d, v.count_updated);
     }
 };
 

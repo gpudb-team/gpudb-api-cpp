@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <exception>
 #include <sstream>
+#include <map>
 
 #include "GPUdb.h"
 #include "Utils/GPUdbExceptions.h"
@@ -201,6 +202,7 @@ bool GPUdb::query( const Treq& request_data,
 bool GPUdb::add_object( const std::string &set_id,
                         const std::string &object_data_json,
                         const std::string &type_definition,
+                        const gpudb::add_parameter& param,
                         gpudb::add_object_response &response )
 {
     gpudb::add_object_request request;
@@ -222,6 +224,18 @@ bool GPUdb::add_object( const std::string &set_id,
         request.object_data_str = object_data_json;
         request.object_encoding = "JSON";
     }
+
+    switch ( param ) // parse parameter options
+    {
+        case gpudb::UPDATE_ON_EXISTING_PK:
+            // Add this parameter to be true
+            request.params.insert( std::pair<std::string, std::string >( "update_on_existing_pk", "true" ) );
+            break;
+        case gpudb::NONE:
+        default:
+            // nothing to do; params will be empty
+            break;
+    }  // end switch on param
 
     // Make an HTTP call to GPUdb and return the response
     return query( request, "/add", response );
@@ -258,6 +272,7 @@ bool GPUdb::add_object( const gpudb::add_object_request &request,
 bool GPUdb::bulk_add( const std::string& set_id,
                       const std::vector<std::string>& object_json_list,
                       const std::string& type_definition,
+                      const gpudb::add_parameter& param,
                       gpudb::bulk_add_response& response )
 {
     gpudb::bulk_add_request request;
@@ -295,6 +310,19 @@ bool GPUdb::bulk_add( const std::string& set_id,
         request.list_str = object_json_list;
         request.list_encoding = "JSON";
     }
+
+    switch ( param ) // parse parameter options
+    {
+        case gpudb::UPDATE_ON_EXISTING_PK:
+            // Add this parameter to be true
+            request.params.insert( std::pair<std::string, std::string >( "update_on_existing_pk", "true" ) );
+            break;
+        case gpudb::NONE:
+        default:
+            // nothing to do; params will be empty
+            break;
+    }  // end switch on param
+
 
     // Make an HTTP call to GPUdb and return the response
     return query( request, "/bulkadd", response );

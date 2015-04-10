@@ -29,24 +29,27 @@
 
 namespace gpudb {
 struct add_object_request {
+    std::string set_id;
     std::vector<uint8_t> object_data;
     std::string object_data_str;
     std::string object_encoding;
-    std::string set_id;
+    std::map<std::string, std::string > params;
 
     inline add_object_request() {}
 
     size_t min_binary_encoded_size() const { return
+            AvroUtils::get_min_binary_encoded_size(set_id)+
             AvroUtils::get_min_binary_encoded_size(object_data)+
             AvroUtils::get_min_binary_encoded_size(object_data_str)+
             AvroUtils::get_min_binary_encoded_size(object_encoding)+
-            AvroUtils::get_min_binary_encoded_size(set_id); }
+            AvroUtils::get_min_binary_encoded_size(params); }
 
     size_t estimated_binary_encoded_size() const { return std::max((size_t)4096,
+            AvroUtils::get_binary_encoded_size(set_id)+
             AvroUtils::get_binary_encoded_size(object_data)+
             AvroUtils::get_binary_encoded_size(object_data_str)+
             AvroUtils::get_binary_encoded_size(object_encoding)+
-            AvroUtils::get_binary_encoded_size(set_id)+
+            AvroUtils::get_binary_encoded_size(params)+
             1024); }
 
     static const std::string& schema_name(void)
@@ -56,7 +59,7 @@ struct add_object_request {
     }
     static const std::string& schema_str(void)
     {
-        static const std::string str("{\"type\":\"record\",\"name\":\"add_object_request\",\"fields\":[{\"name\":\"object_data\",\"type\":\"bytes\"},{\"name\":\"object_data_str\",\"type\":\"string\"},{\"name\":\"object_encoding\",\"type\":\"string\"},{\"name\":\"set_id\",\"type\":\"string\"}]}");
+        static const std::string str("{\"type\":\"record\",\"name\":\"add_object_request\",\"fields\":[{\"name\":\"set_id\",\"type\":\"string\"},{\"name\":\"object_data\",\"type\":\"bytes\"},{\"name\":\"object_data_str\",\"type\":\"string\"},{\"name\":\"object_encoding\",\"type\":\"string\"},{\"name\":\"params\",\"type\":{\"type\":\"map\",\"values\":\"string\"}}]}");
         return str;
     }
 
@@ -66,16 +69,18 @@ struct add_object_request {
 namespace avro {
 template<> struct codec_traits<gpudb::add_object_request> {
     static void encode(Encoder& e, const gpudb::add_object_request& v) {
+        avro::encode(e, v.set_id);
         avro::encode(e, v.object_data);
         avro::encode(e, v.object_data_str);
         avro::encode(e, v.object_encoding);
-        avro::encode(e, v.set_id);
+        avro::encode(e, v.params);
     }
     static void decode(Decoder& d, gpudb::add_object_request& v) {
+        avro::decode(d, v.set_id);
         avro::decode(d, v.object_data);
         avro::decode(d, v.object_data_str);
         avro::decode(d, v.object_encoding);
-        avro::decode(d, v.set_id);
+        avro::decode(d, v.params);
     }
 };
 

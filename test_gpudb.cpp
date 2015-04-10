@@ -78,15 +78,15 @@ int main(int argc, char* argv[])
         // Need to format the object using JSON formatting
         std::string obj = "{\"x\":123.45,\"y\":23.34,\"OBJECT_ID\":\"abcd\"}";
         std::cout << "Adding an object: "
-                  << gpudb.add_object( "point_set_child", obj, point_type, add_obj_resp )
+                  << gpudb.add_object( "point_set_child", obj, point_type, gpudb::NONE, add_obj_resp )
                   << std::endl;
         obj = "{\"x\":100.10,\"y\":33.33,\"OBJECT_ID\":\"efgh\"}";
         std::cout << "Adding an object: "
-                  << gpudb.add_object( "point_set_child", obj, point_type, add_obj_resp )
+                  << gpudb.add_object( "point_set_child", obj, point_type, gpudb::NONE, add_obj_resp )
                   << std::endl;
         obj = "{\"x\":-78.91,\"y\":42.42,\"OBJECT_ID\":\"blah\"}";
         std::cout << "Adding an object: "
-                  << gpudb.add_object( "point_set_child", obj, point_type, add_obj_resp )
+                  << gpudb.add_object( "point_set_child", obj, point_type, gpudb::NONE, add_obj_resp )
                   << std::endl;
 
         // Check the status of the newly created sets
@@ -135,7 +135,7 @@ int main(int argc, char* argv[])
             obj_list.push_back( buf );
         }
         std::cout << "Add 100 objects to the child set in bulk: "
-                  << gpudb.bulk_add( "point_set_child", obj_list, point_type, bulk_add_resp )
+                  << gpudb.bulk_add( "point_set_child", obj_list, point_type, gpudb::NONE, bulk_add_resp )
                   << std::endl;
 
 
