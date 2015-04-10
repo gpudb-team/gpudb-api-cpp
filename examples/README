@@ -1,0 +1,14 @@
+Each file showcases the use of a particular GPUdb endpoint.  The filename reflects which endpoint is exemplified by that C++ file.
+
+To compile any given example file, at the command prompt, run 'make filename_without_extensiton'.  For example, to compile example_status.cpp, run:
+
+> make example_status
+> ./example_status
+
+
+Users may need to export the lib directory to the library path:
+
+> export LD_LIBRARY_PATH=../lib:$LD_LIBRARY_PATH
+
+
+If other paths need to be changed for other libraries, please refer to the instructions at the top of the Makefile.
