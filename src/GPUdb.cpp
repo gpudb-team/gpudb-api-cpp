@@ -76,7 +76,7 @@ GPUdb::GPUdb( std::string ip, int port, std::string encoding,
     catch ( const std::exception &e )
     {   // Set the error message and status, throw if needed
         std::stringstream err_ss;
-        err_ss << "Could not connect to GPUdb!";
+        err_ss << "Could not connect to GPUdb (" << e.what() << ")";
         g_error_message = err_ss.str();
         g_status = gpudb::ERROR;
         if ( g_throw_exceptions )
@@ -128,8 +128,15 @@ bool GPUdb::query( const Treq& request_data,
 
         // Upon success, convert the returned data to human readable data
         if ( gresponse.status == "OK" )
-            gpudb::AvroUtils::convert_to_object( gresponse.data, response );
-    }
+        {
+            if( gpudb::AvroUtils::convert_to_object( gresponse.data, response ) == false )
+            {
+                // Indicate that there was a decoding error
+                gresponse.status = "ERROR";
+                gresponse.message = "Problem decoding Avro object for " + response.schema_name();
+            }
+        }
+    }  // end binary encoding
     else if ( g_encoding == "JSON" )
     {   // for JSON encoding, convert the object to a JSON formatted string
         // then make the HTTP call
@@ -137,16 +144,23 @@ bool GPUdb::query( const Treq& request_data,
         
         // Convert the data to JSON formatted string
         gpudb::AvroUtils::convert_to_json_by_schema_str<Treq>( request_data,
-                                                        request_data.schema_str(),
-                                                        json_data );
+                                                               request_data.schema_str(),
+                                                               json_data );
         // Make an HTTP call to GPUdb
         gresponse =  gpudb::HTTPUtils::call_gpudb( json_data, endpoint, g_ip, g_port, g_username, g_password );
 
         // Upon success, convert the returned data to human readable data
         if ( gresponse.status == "OK" )
-            gpudb::AvroUtils::convert_to_object( gresponse.data_str, response );
-    }
-    else
+        {
+            if ( gpudb::AvroUtils::convert_to_object( gresponse.data_str, response ) == false )
+            {
+                // Indicate that there was a decoding error
+                gresponse.status = "ERROR";
+                gresponse.message = "Problem decoding Avro object for " + response.schema_name();
+            }
+        }
+    }  // end json encoding
+    else // unacceptable encoding
     {
         // Indicate error (but should not reach this point)
         gresponse.status = "ERROR";
@@ -187,6 +201,20 @@ bool GPUdb::query( const Treq& request_data,
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // GPUdb Endpoint API Wrapper Functions
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+// Ping GPUdb
+bool GPUdb::ping( std::string &response )
+{
+    // Ping GPUdb
+    response = gpudb::HTTPUtils::ping( g_ip, g_port );
+
+    // Response should not be empty
+    if ( response == "" )
+        return false;
+    return true;
+
+}  // end ping
 
 
 // Add an object to an existing set in GPUdb

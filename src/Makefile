@@ -1,5 +1,5 @@
 # Instruction for users:
-# Replace the value of the USER_CXXFLAGS variable with avrocpp and boost include paths
+# Replace the value of the USER_CXXFLAGS variable with avrocpp and Poco::Net include paths
 # (the current one covers both for me, but it might be different for you)
 USER_CXXFLAGS = -I/opt/gaia-dev-libs/include/ 
 

@@ -1,0 +1,39 @@
+*********************************************************************
+**  GPUdb C++ API
+**  GIS Federal, Inc.
+**
+**  All rights reserved
+**
+*********************************************************************
+
+
+
+
+2015-04-30 Meem Mahmud <mmahmud@gisfederal.com>
+	
+	* src/GPUdb.cpp:
+	--> (function query) Added error handling for failing GPUdb response
+	    decoding
+	--> (function ping) Added a ping capability
+	* src/GPUdb.h:
+	--> (function ping) Added a ping capability
+	* src/Makefile:
+	--> Replaced references BOOST with Poco::Net in comments
+	* src/Utils/AvroUtils.cpp:
+	--> (function convert_json_to_binary_by_schema_str) Removed a spurious
+	    debug print command
+	* src/Utils/HTTPUtils.cpp:
+	--> Removed all traces of Boost ASIO async client class memeber function
+	    definition and usage
+	--> (functions poco_query x2) Added Poco::Net based client query
+	    functions -- stabler and simpler than boost
+	--> (function ping) Added a new function solely designed to ping GPUdb
+	* src/Utils/HTTPUtils.h:
+	--> Removed all Boost ASIO async client class memeber function
+	    definitions
+	--> (functions poco_query x2) Added definitions for the Poco::Net based
+	    client query functions
+	--> (function ping) Added definition for the ping function
+	* Makefile:
+	--> Removed BOOST in favor of Poco::Net
+	--> Added rpath to link to libgpudb.so in ./lib

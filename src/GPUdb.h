@@ -107,6 +107,12 @@ public:
     // Returns the current error message, if any (empty string otherwise)
     std::string error_message();
 
+
+
+    // Ping GPUdb
+    bool ping( std::string &response );
+
+
     // Add an object to an existing set in GPUdb
     bool add_object( const std::string &set_id,
                      const std::string &object_data_json,

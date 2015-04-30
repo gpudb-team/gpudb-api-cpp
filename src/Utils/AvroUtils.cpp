@@ -106,8 +106,6 @@ bool AvroUtils::convert_json_to_binary_by_schema_str( const std::string& json_st
     }
     catch (const std::exception &excep )
     {
-        std::cout << "I'm here exception\n";
-
         return false;
     }
 } // end convert_json_to_binary_by_schema_str
