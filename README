@@ -13,7 +13,7 @@ Required Libraries:
 
 The following libraries are required for libgpudb.so:
 
-* Boost (only need to link to boost_system, boost_filesystem, boost_program_options)
+* Poco (only need to link to PocoNet)
 * Avro (avrocpp)
 
 
@@ -52,7 +52,7 @@ text editor.
 > make
 
 (Optional, if needed:)
-> export LD_LIBRARY_PATH=/path/to/avrolib:/path/to/boostlib:/path/to/gpulib:$LD_LIBRARY_PATH
+> export LD_LIBRARY_PATH=/path/to/avrolib:/path/to/pocolib:/path/to/gpulib:$LD_LIBRARY_PATH
 
 Please ensure that GPUdb is running somewhere (test_gpudb expects it at 127.0.0.1:9191, but
 feel free to change that in the code).
